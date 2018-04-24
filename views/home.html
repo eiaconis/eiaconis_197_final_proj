@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Paint with Friends</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<style>
+.navbar {
+  margin-bottom: 0;
+  border-radius: 0;
+}
+
+/* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+.row.content {height: 450px}
+
+/* Set gray background color and 100% height */
+.sidenav {
+  padding-top: 20px;
+  background-color: #f1f1f1;
+  height: 100%;
+}
+
+/* Set black background color, white text and some padding */
+footer {
+  background-color: #555;
+  color: white;
+  padding: 15px;
+}
+
+/* On small screens, set height to 'auto' for sidenav and grid */
+@media screen and (max-width: 767px) {
+  .sidenav {
+    height: auto;
+    padding: 15px;
+  }
+  .row.content {height:auto;} 
+}
+/*
+ * Globals & CSS reset
+ * ---------------------------------------------------------------------------
+ */
+
+ * {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+a:link {
+  color: #084080;
+  text-decoration: none;
+}
+
+a:link:hover {
+  color: #052850;
+  text-decoration: underline;
+}
+
+a:link:visited {
+  color: #021020;
+}
+
+ul, ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  line-height: 1;
+  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+}
+
+input {
+  outline: none;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+hr {
+  border: none;
+  border-bottom: dotted 1px #aaa;
+}
+
+button:hover {
+  background-color: #4CAF50; /* Green */
+  color: white;
+}
+
+button {
+ width: 150px;
+ padding: 15px;
+ border-top: 15px;
+}
+
+.well {
+  font-size: 15px;
+  font-weight:normal;
+} 
+
+
+
+/*
+ * Shared between palette and canvas.
+ */
+ .swatch {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  background-size: 100% auto;
+  border-bottom: 0px;
+}
+
+
+.swatch.blue       { background-image: url('images/color-swatch-blue.png'); }
+.swatch.red { background-image: url('images/color-swatch-red.jpg'); }
+.swatch.orange { background-image: url('images/color-swatch-orange.png'); }
+.swatch.black { background-image: url('images/color-swatch-black.png'); }
+.swatch.purple        { background-image: url('images/color-swatch-purple.jpeg'); }
+.swatch.pink    { background-image: url('images/color-swatch-pink.png'); }
+.swatch.green  { background-image: url('images/color-swatch-green.png'); }
+.swatch.white    { background-image: url('images/color-swatch-white.png'); }
+.swatch.yellow  { background-image: url('images/color-swatch-yellow.png'); }
+.swatch.brown { background-image: url('images/color-swatch-brown.jpg'); }
+.swatch.grey { background-image: url('images/color-swatch-grey.png'); }
+
+.palette {
+  width: 100%;
+  margin-bottom: 1em;
+}
+
+.palette .swatch {
+  width: 25px;
+  height: 30px;
+  display: inline-block;
+  margin: 5px;
+  border-bottom: solid 5px white;
+  background-size: 100% auto;
+  cursor: pointer;
+}
+
+.palette .swatch:hover    { border-color: #aca; opacity: 0.8; }
+.palette .swatch.selected { border-color: #0074D9; }
+.toAdd { border-color: #0074D9; }
+
+.canvas {
+  width: 97%;
+  position: relative;
+  margin:auto;
+  border: 5px solid black;
+}
+
+.canvas .row {
+  width: 100%;
+  height: 10px;
+  cursor: crosshair;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  position: relative;
+  margin:auto;
+}
+
+</style>
+<body>
+
+  <nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>                        
+        </button>
+        <img src="http://images.clipartpanda.com/canvas-clipart-gg62248744.jpg" height="50" width="55">
+      </div>
+      <div class="collapse navbar-collapse" id="myNavbar">
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="#">Home</a></li>
+          <li><a href="#">My Projects</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <form action ="/logout" method="post" >
+            <button type="submit" class="btn btn-primary btn-block btn-large">Log Out</button>
+          </form>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+  <div class="container-fluid text-center">    
+    <div class="row content">
+      <div class="col-sm-2 sidenav">
+        <h2 class="users"> Other Users:</h2>
+        <!-- Render Dynamically-->
+      </div>
+      <div class="col-sm-8 text-left"> 
+        <div id="canvas-builder">
+          <h3>Swatches</h3>
+          <div class="palette">
+            <ul>
+              <li class="swatch blue"></li>
+              <li class="swatch red"></li>
+              <li class="swatch orange"></li>
+              <li class="swatch black"></li>
+              <li class="swatch purple"></li>
+              <li class="swatch pink"></li>
+              <li class="swatch green"></li>
+              <li class="swatch white"></li>
+              <li class="swatch yellow"></li>
+              <li class="swatch brown"></li>
+              <li class="swatch grey"></li>
+            </ul>
+            <hr/>
+          </div>
+
+          <h3>Canvas</h3>
+          <script>
+            var allUsers = []
+            var allGroups = []
+            $(document).ready(function () {
+              console.log("getting all users");
+              $.get('/allUsers', function (data, status) {
+                allUsers = data;
+                for (var i = 0; i < allUsers.length; i++) {
+                  var $newDiv = $('<div>');
+                  $('.users').append($newDiv);
+                  $newDiv.addClass("well " + allUsers[i].username);
+                  var content = document.createTextNode(allUsers[i].username);
+                  $newDiv.append(content);
+                  $newDiv.on('mousedown', onClickedUser);
+                }
+              });
+              $.get('/allGroups', function (data, status) {
+                allGroups= data;
+                for (var i = 0; i < allGroups.length; i++) {
+                  var $newDiv = $('<div>');
+                  $('.groups').append($newDiv);
+                  $newDiv.addClass("well " + allGroups[i].name);
+                  var content = document.createTextNode(allGroups[i].username);
+                  $newDiv.append(content);
+                  //$newDiv.on('mousedown', onClickedUser); //TODO: open current canvas of group
+                }
+              });
+              console.log("loading canvas");
+              var $canvasElement = $('#canvas-builder');
+              var builder = new CanvasBuilder($canvasElement);
+              builder.setupPalette();
+              builder.setupCanvas();
+            });
+            /*
+ Modified HW4
+ */
+// Default size of map (in tiles)
+var DEFAULT_WIDTH = 84;
+var DEFAULT_HEIGHT = 47;
+var selectedSwatch = 'white';
+
+var CanvasBuilder = function ($container, params) {
+  console.log("canvas builder")
+  this.$container = $container;
+  this.height = DEFAULT_HEIGHT;
+  this.width = DEFAULT_WIDTH;
+
+};
+
+CanvasBuilder.prototype.setupPalette = function () {
+  console.log("setting up pallette")
+  $('.swatch').click(function () {
+    $('.selected').removeClass('selected');
+    $(this).addClass('selected');
+    var $selSwatch = $('.selected');  // jQuery element
+    var selSwatch = $selSwatch.get(0);  // DOM element
+    selectedSwatch = selSwatch.classList[1];
+  });
+};
+
+CanvasBuilder.prototype.setupCanvas = function () {
+  for (var i = 0; i < this.height; i++) {
+    var $firstDiv = $('<div>');
+    $('.canvas').append($firstDiv);
+    $firstDiv.addClass('row');
+    for (var j = 0; j < this.width; j++) {
+      var $newDiv = $('<div>');
+      $firstDiv.prepend($newDiv);
+      $newDiv.addClass('swatch white');
+      $newDiv.data('past', 'swatch white');
+      $newDiv.on('mouseover', onMouseOver);
+      $newDiv.on('mousedown', onMouseDown);
+      $newDiv.on('mouseout', onMouseOut);
+    }
+  }
+}
+
+// Event handlers 
+
+function onMouseOver (e) {
+  var LEFT_MOUSE_BUTTON = 1;
+  if (e.which === LEFT_MOUSE_BUTTON) {
+    $(this).removeClass($(this).get(0).classList[1]);
+    $(this).addClass(selectedSwatch);
+    $(this).data('past', selectedSwatch);
+  } else {
+    $(this).removeClass($(this).get(0).classList[1]);
+    $(this).addClass(selectedSwatch);
+  }
+}
+
+function onMouseOut () {
+  $(this).removeClass($(this).get(0).classList[1]);
+  $(this).addClass($(this).data('past'));
+}
+
+function onMouseDown () {
+  $(this).data('past', selectedSwatch);
+  $(this).removeClass($(this).get(0).classList[1]);
+  $(this).addClass(selectedSwatch);
+}
+
+function onClickedUser() {
+  if ($(this).get(0).classList[2]) {
+    $(this).removeClass("toAdd");
+  } else {
+    $(this).addClass("toAdd");
+  }
+}
+
+</script>
+<div class="canvas">
+  <!-- map cells populated by JS -->
+</div>
+<br>
+<button border-top="5px"> Save </button>
+</div>
+
+<hr>
+</div>
+<div class="col-sm-2 sidenav">
+  <h2 class="groups"> Your Groups:</h2>
+</div>
+</div>
+</div>
+
+</body>
+</html>
