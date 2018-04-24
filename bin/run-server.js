@@ -32,7 +32,7 @@ socketServer.on('connection', function (socket) {
   // update all users a new user has logged in
   socket.on('log_on', function (data) {
   	currOnline.push(data);
-  	socketServer.emit('newuser_log_on', data);
+  	socket.broadcast.emit('newuser_log_on', data);
   });
 
 // update all users a user has logged out
@@ -45,7 +45,7 @@ socket.on('log_out', function (data) {
 		currOnline = newCurr;
 	}
 	console.log("logging out user: " + data._id);
-	socketServer.emit('user_log_out', data);
+	socket.broadcast.emit('user_log_out', data);
 });
 
 // create group and update users in this group

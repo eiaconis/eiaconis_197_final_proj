@@ -4,6 +4,7 @@ var cookieSession = require('cookie-session');
 var bodyParser = require('body-parser');
 var userDb = require('../db/user');
 var groupDb = require('../db/group');
+var canvasDb = require('../db/canvas');
 //var Canvas = require('../db/Canvas');
 
 
@@ -94,5 +95,22 @@ router.post('/logout', function (req, res) {
 	res.render('/');
 });
 
+router.post('/saveCanvas', function (req, res) {
+	console.log("saving canvas");
+	// TODO: figure out how to retrieve newCanvas here
+	canvasDb.saveCanvas(JSON.parse(newCanvas), function (err, resp) {
+		if (err) {
+			console.log(err);
+		} else {
+			userDb.addCanvas(req.session.user, resp._id, function(err, user) {
+				if (err) {
+					alert("Error saving to user profile: " + err);
+				}
+				console.log("update: " + user);
+				res.sendStatus(200);
+			})
+		}
+	})
+})
 
 module.exports = router;

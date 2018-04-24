@@ -231,10 +231,12 @@ button {
             <hr/>
           </div>
 
-          <h3>Canvas</h3>
+          <h3>Canvas:</h3>
+          <textarea class="title" id="title"> Enter title!</textarea>
           <script>
            // var allUsers = []
            var allGroups = []
+           var canvasState = []
            var curr;
            $(document).ready(function () {
             $.get('/allGroups', function (data, status) {
@@ -273,7 +275,6 @@ button {
 
               // update state if user logs on
               window.socket.on('user_log_out', function (user) {
-                console.log(user + " user logged out");
                 window.removeUser(user);
               });
 
@@ -332,7 +333,6 @@ var CanvasBuilder = function ($container, params) {
   this.$container = $container;
   this.height = DEFAULT_HEIGHT;
   this.width = DEFAULT_WIDTH;
-
 };
 
 CanvasBuilder.prototype.setupPalette = function () {
@@ -352,9 +352,12 @@ CanvasBuilder.prototype.setupCanvas = function () {
     $('.canvas').append($firstDiv);
     $firstDiv.addClass('row');
     for (var j = 0; j < this.width; j++) {
+      var ind = (i * 83) + j;
+      canvasState[ind] = "white";
       var $newDiv = $('<div>');
       $firstDiv.prepend($newDiv);
       $newDiv.addClass('swatch white');
+      $newDiv.attr('id', ind);
       $newDiv.data('past', 'swatch white');
       $newDiv.on('mouseover', onMouseOver);
       $newDiv.on('mousedown', onMouseDown);
@@ -385,6 +388,8 @@ function onMouseOut () {
 function onMouseDown () {
   $(this).data('past', selectedSwatch);
   $(this).removeClass($(this).get(0).classList[1]);
+  var ind = $(this).attr('id');
+  canvasState[ind] = selectedSwatch;
   $(this).addClass(selectedSwatch);
 }
 
@@ -404,12 +409,21 @@ function logOut() {
   });
 }
 
+// iterate through all of the "swatches" of the current canvas state and store color in flattened array
+function saveCanvas() {
+  var title = $('.title').val();
+  var newCanvas = {"title": title, "author": curr._id, "type":true, content:canvasState}; //TODO update type based if in group
+  $.post('/saveCanvas', JSON.stringify(newCanvas), function (req, res) {
+    alert('Saved canvas!');
+  });
+}
+
 </script>
 <div class="canvas">
   <!-- map cells populated by JS -->
 </div>
 <br>
-<button border-top="5px"> Save </button>
+<button border-top="5px" onClick="saveCanvas()"> Save </button>
 </div>
 
 <hr>
