@@ -24,7 +24,7 @@ var userSchema = new mongoose.Schema({
 var groupSchema = new mongoose.Schema({
   name: String,
   users: [Schema.ObjectId], // id of all members in group
-  canvases: [Schema.ObjectId], // id of all canvases created by group
+  canvas: Schema.ObjectId, // canvasId being created by group
 });
 
 var canvasSchema = new mongoose.Schema({

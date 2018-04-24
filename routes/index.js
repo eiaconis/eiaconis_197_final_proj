@@ -97,8 +97,8 @@ router.post('/logout', function (req, res) {
 
 router.post('/saveCanvas', function (req, res) {
 	console.log("saving canvas");
-	// TODO: figure out how to retrieve newCanvas here
-	canvasDb.saveCanvas(JSON.parse(newCanvas), function (err, resp) {
+	var newCanvas = req.canvas;
+	canvasDb.saveCanvas(newCanvas, function (err, resp) {
 		if (err) {
 			console.log(err);
 		} else {

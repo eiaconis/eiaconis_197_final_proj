@@ -209,7 +209,7 @@ button {
         <!-- Render Dynamically-->
         <br>
         <textarea id="new-group=name" class="new-group-name"> Enter group name... </textarea>
-        <button border-top="5px"> Create Group </button>
+        <button onClick="createGroup()" border-top="5px"> Create Group </button>
       </div>
       <div class="col-sm-8 text-left"> 
         <div id="canvas-builder">
@@ -240,16 +240,18 @@ button {
            var curr;
            $(document).ready(function () {
             $.get('/allGroups', function (data, status) {
-              allGroups= data;
+              allGroups = data;
               for (var i = 0; i < allGroups.length; i++) {
-                var $newDiv = $('<div>');
-                $('.groups').append($newDiv);
-                $newDiv.addClass("well " + allGroups[i].name);
-                var content = document.createTextNode(allGroups[i].username);
-                $newDiv.append(content);
-                  //$newDiv.on('mousedown', onClickedUser); //TODO: open current canvas of group
-                }
-              });
+                if (allGroups.users.contains(curr._id)) {
+                  var $newDiv = $('<div>');
+                  $('.groups').append($newDiv);
+                  $newDiv.addClass("well " + allGroups[i].name);
+                  var content = document.createTextNode(allGroups[i].name);
+                  $newDiv.append(content);
+                $newDiv.on('mousedown', joinGroup); //TODO: open current canvas of group
+              }
+            }
+          });
             console.log("loading canvas");
             var $canvasElement = $('#canvas-builder');
             var builder = new CanvasBuilder($canvasElement);
@@ -290,22 +292,22 @@ button {
                 }
               });
 
-              window.socket.on('group_created', function (data) {
-                //TODO
+              window.socket.on('new_group', function (data) {
+                window.makeGroup(data);
               });
 
               window.socket.on('user_left', function (data) {
                 //TODO
               });
 
-              window.socket.on('user_join', function (data) {
-                //TODO
+              window.socket.on('user_join', function (username) {
+                 alert(username + " joined!");
               });
 
             });
 
            window.makeUser = function(data) {
-            if (data._id != curr._id) {
+            if (data._id != curr._id ) {
               var $newDiv = $('<div>');
               $('.users').append($newDiv);
               $newDiv.addClass("well " + data._id);
@@ -320,6 +322,18 @@ button {
             var div = document.getElementById(data._id);
             div.parentNode.removeChild(div);
           }
+
+          window.makeGroup = function(data) {
+            if (data.users.includes(curr._id)) {
+              var $newDiv = $('<div>');
+              $('.groups').append($newDiv);
+              $newDiv.addClass("well " + data.name);
+              $newDiv.attr('id', data.name);
+              var content = document.createTextNode(data.name);
+              $newDiv.append(content);
+            $newDiv.on('mousedown', joinGroup); //TODO: open current canvas of group
+          }
+        }
  /*
  Modified HW4
  */
@@ -409,11 +423,33 @@ function logOut() {
   });
 }
 
+function createGroup() {
+  var groupName = $('.new-group-name').val();
+  var newUsers = []
+  var users = [].slice.call(document.getElementsByClassName('toAdd')); // get all user wells with "toAdd" class set
+  for (var i = 0; i < users.length; i++) {
+    newUsers.push(users[i].id);
+  }
+  newUsers.push(curr._id);
+  console.log(newUsers);
+  var data = {name: groupName, users: newUsers};
+  window.socket.emit('create_group', data);
+}
+
+function joinGroup() {
+  //TODO: when user clicks name of group, add to room
+  var groupName = $(this).attr('id');
+  var data = {"groupName": groupName, "userId": curr._id, "username":curr.username};
+  window.socket.emit('join_group', data);
+}
+
 // iterate through all of the "swatches" of the current canvas state and store color in flattened array
 function saveCanvas() {
   var title = $('.title').val();
   var newCanvas = {"title": title, "author": curr._id, "type":true, content:canvasState}; //TODO update type based if in group
-  $.post('/saveCanvas', JSON.stringify(newCanvas), function (req, res) {
+  console.log(newCanvas);
+  document.canvas = newCanvas;
+  $.post('/saveCanvas', function (req, res) {
     alert('Saved canvas!');
   });
 }
@@ -432,8 +468,6 @@ function saveCanvas() {
   <h2 class="groups"> Your Groups:</h2>
 </div>
 <br>
-<button border-top="5px" class="selected"> Enter Group </button>
-<button border-top="5px" class="unselected"> Leave Group </button>
 </div>
 </div>
 
