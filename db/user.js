@@ -21,6 +21,12 @@ module.exports = {
     });
   },
 
+  getUserById: function(id, callback) {
+    mongo.User.findOne({_id: id}).exec(function (error, user) {
+      callback(error, user);
+    });
+  },
+
   checkPassword: function (username, password, callback) {
     mongo.User.findOne({username: username, password: password }, function (error, res) {
       if (error) {

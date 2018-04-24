@@ -22,10 +22,23 @@ router.get('/projects', function (req, res, next) {
 	res.render('projects');
 });
 
+router.get('/currUser', function (req, res, next) {
+	userDb.getUserById(req.session.user, function (err, user) {
+		console.log("got curr User" + user);
+		res.send(user);
+	});
+});
+
 router.get('/allUsers', function (req, res, next) {
 	userDb.getAllUsers(function (err, allUsers) {
 		console.log("got all Users" + allUsers);
-		res.send(allUsers);
+		var users = []
+		for (var i = 0; i < allUsers.length; i++) {
+			if (allUsers[i]._id != req.session.user){
+				users.push(allUsers[i]);
+			}
+		}
+		res.send(users);
 	});
 });
 
@@ -49,7 +62,7 @@ router.post('/createAccount', function (req, res) {
 		} else {
 			req.session.isAuthenticated = true;
 			req.session.user = savedUser._id;
-			console.log("Current user: " + req.user);
+			console.log("Current user: " + req.session.user);
 			res.redirect('/home');
 		}
 	});
@@ -67,7 +80,7 @@ router.post('/checkLogin', function (req, res) {
 			req.session.isAuthenticated = true;
 			req.session.user = resp._id;
 			console.log(req.session.isAuthenticated);
-			console.log("Current user: " + req.user);
+			console.log("Current user: " + req.session.user);
 			res.redirect('/home');
 		} else {
 			res.redirect('/');
@@ -76,11 +89,9 @@ router.post('/checkLogin', function (req, res) {
 });
 
 router.post('/logout', function (req, res) {
-	console.log("logging out");
 	req.session.isAuthenticated = false;
 	req.user = null;
-	console.log("Current user: " + req.session.isAuthenticated);
-	res.redirect('/');
+	res.render('/');
 });
 
 

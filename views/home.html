@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
 </head>
 <style>
 .navbar {
@@ -20,7 +21,6 @@
 /* Set gray background color and 100% height */
 .sidenav {
   padding-top: 20px;
-  background-color: #f1f1f1;
   height: 100%;
 }
 
@@ -172,6 +172,11 @@ button {
   margin:auto;
 }
 
+.unselected:hover{
+  background-color:#FF0000;
+
+}
+
 </style>
 <body>
 
@@ -191,9 +196,7 @@ button {
           <li><a href="#">My Projects</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
-          <form action ="/logout" method="post" >
-            <button type="submit" class="btn btn-primary btn-block btn-large">Log Out</button>
-          </form>
+          <button class="btn btn-primary btn-block btn-large" onClick="logOut()">Log Out</button> 
         </ul>
       </div>
     </div>
@@ -202,8 +205,11 @@ button {
   <div class="container-fluid text-center">    
     <div class="row content">
       <div class="col-sm-2 sidenav">
-        <h2 class="users"> Other Users:</h2>
+        <h2 class="users"> Online Users:</h2>
         <!-- Render Dynamically-->
+        <br>
+        <textarea id="new-group=name" class="new-group-name"> Enter group name... </textarea>
+        <button border-top="5px"> Create Group </button>
       </div>
       <div class="col-sm-8 text-left"> 
         <div id="canvas-builder">
@@ -227,39 +233,93 @@ button {
 
           <h3>Canvas</h3>
           <script>
-            var allUsers = []
-            var allGroups = []
-            $(document).ready(function () {
-              console.log("getting all users");
-              $.get('/allUsers', function (data, status) {
-                allUsers = data;
+           // var allUsers = []
+           var allGroups = []
+           var curr;
+           $(document).ready(function () {
+            $.get('/allGroups', function (data, status) {
+              allGroups= data;
+              for (var i = 0; i < allGroups.length; i++) {
+                var $newDiv = $('<div>');
+                $('.groups').append($newDiv);
+                $newDiv.addClass("well " + allGroups[i].name);
+                var content = document.createTextNode(allGroups[i].username);
+                $newDiv.append(content);
+                  //$newDiv.on('mousedown', onClickedUser); //TODO: open current canvas of group
+                }
+              });
+            console.log("loading canvas");
+            var $canvasElement = $('#canvas-builder');
+            var builder = new CanvasBuilder($canvasElement);
+            builder.setupPalette();
+            builder.setupCanvas();
+
+            window.socketURL = 'http://localhost:3000';
+
+            window.socket = io(window.socketURL);
+
+              // notify server a new user has connected and ask it to notify other online users
+              window.socket.on('connect', function () {
+                $.get('/currUser', function (data, status) {
+                  curr = data; // store reference to current user frontend
+                  window.socket.emit('log_on', data);
+                });
+              });
+
+              // update state if user logs on
+              window.socket.on('newuser_log_on', function (user) {
+                window.makeUser(user);
+              });
+
+              // update state if user logs on
+              window.socket.on('user_log_out', function (user) {
+                console.log(user + " user logged out");
+                window.removeUser(user);
+              });
+
+              window.socket.on('online_users', function (allUsers) {
                 for (var i = 0; i < allUsers.length; i++) {
                   var $newDiv = $('<div>');
                   $('.users').append($newDiv);
-                  $newDiv.addClass("well " + allUsers[i].username);
+                  $newDiv.addClass("well " + allUsers[i]._id);
+                  $newDiv.attr('id', allUsers[i]._id);
                   var content = document.createTextNode(allUsers[i].username);
                   $newDiv.append(content);
                   $newDiv.on('mousedown', onClickedUser);
                 }
               });
-              $.get('/allGroups', function (data, status) {
-                allGroups= data;
-                for (var i = 0; i < allGroups.length; i++) {
-                  var $newDiv = $('<div>');
-                  $('.groups').append($newDiv);
-                  $newDiv.addClass("well " + allGroups[i].name);
-                  var content = document.createTextNode(allGroups[i].username);
-                  $newDiv.append(content);
-                  //$newDiv.on('mousedown', onClickedUser); //TODO: open current canvas of group
-                }
+
+              window.socket.on('group_created', function (data) {
+                //TODO
               });
-              console.log("loading canvas");
-              var $canvasElement = $('#canvas-builder');
-              var builder = new CanvasBuilder($canvasElement);
-              builder.setupPalette();
-              builder.setupCanvas();
+
+              window.socket.on('user_left', function (data) {
+                //TODO
+              });
+
+              window.socket.on('user_join', function (data) {
+                //TODO
+              });
+
             });
-            /*
+
+           window.makeUser = function(data) {
+            if (data._id != curr._id) {
+              var $newDiv = $('<div>');
+              $('.users').append($newDiv);
+              $newDiv.addClass("well " + data._id);
+              $newDiv.attr('id', data._id);
+              var content = document.createTextNode(data.username);
+              $newDiv.append(content);
+              $newDiv.on('mousedown', onClickedUser);
+            }
+          }
+
+          window.removeUser = function(data) {
+            var div = document.getElementById(data._id);
+            div.parentNode.removeChild(div);
+          }
+ /*
  Modified HW4
  */
 // Default size of map (in tiles)
@@ -336,6 +396,14 @@ function onClickedUser() {
   }
 }
 
+function logOut() {
+  window.socket.emit('log_out', curr);
+  alert("Logging out!");
+  $.post('/logout', function (req, res) {
+    window.location.reload();
+  });
+}
+
 </script>
 <div class="canvas">
   <!-- map cells populated by JS -->
@@ -349,6 +417,9 @@ function onClickedUser() {
 <div class="col-sm-2 sidenav">
   <h2 class="groups"> Your Groups:</h2>
 </div>
+<br>
+<button border-top="5px" class="selected"> Enter Group </button>
+<button border-top="5px" class="unselected"> Leave Group </button>
 </div>
 </div>
 
