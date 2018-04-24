@@ -9,15 +9,11 @@ module.exports = {
 
   addGroup: function (groupData, callback) {
     var group = new mongo.Group(groupData);
-    group.save(function (error) {
-      callback(error);
-    });
-  },
-
-  getAllGroups: function (currUserId, callback) {
-    mongo.Group.find({users:currUserId}, function (error, groups) {
-      callback(error, groups);
+    group.save(function (error, saved) {
+      console.log(saved);
+      callback(error, saved);
     });
   }
+
 };
 

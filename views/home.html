@@ -174,7 +174,10 @@ button {
 
 .unselected:hover{
   background-color:#FF0000;
+}
 
+.selected {
+  border-color: #0074D9;
 }
 
 </style>
@@ -249,16 +252,18 @@ button {
 
             window.socket = io(window.socketURL);
 
+            $.get('/currUser', function (data, status) {
+                  curr = data; // store reference to current user frontend
+
+                });
               // notify server a new user has connected and ask it to notify other online users
               window.socket.on('connect', function () {
-                $.get('/currUser', function (data, status) {
-                  curr = data; // store reference to current user frontend
-                  window.socket.emit('log_on', data);
-                });
+                window.socket.emit('log_on', curr);
               });
 
               // update state if user logs on
               window.socket.on('newuser_log_on', function (user) {
+                console.log(user)
                 window.makeUser(user);
               });
 
@@ -269,6 +274,7 @@ button {
 
               window.socket.on('online_users', function (allUsers) {
                 for (var i = 0; i < allUsers.length; i++) {
+                  if (allUsers[i] && !document.getElementById(allUsers[i]._id) && allUsers[i]._id != curr._id) {
                   var $newDiv = $('<div>');
                   $('.users').append($newDiv);
                   $newDiv.addClass("well " + allUsers[i]._id);
@@ -277,19 +283,24 @@ button {
                   $newDiv.append(content);
                   $newDiv.on('mousedown', onClickedUser);
                 }
-              });
+              }
+            });
 
               window.socket.on('new_group', function (data) {
                 window.makeGroup(data);
               });
 
               window.socket.on('user_left', function (username) {
-                alert(username + " left group!");
+                if(username != curr.username) {
+                  alert(username + " left group!");
+                }
               });
 
               window.socket.on('user_join', function (username) {
-               alert(username + " joined group!");
-             });
+               if(username != curr.username) {
+                alert(username + " joined group!");
+              }
+            });
 
               window.socket.on('paint_canvas', function(data) {
                 window.paintSwatch(data);
@@ -298,7 +309,7 @@ button {
             });
 
            window.makeUser = function(data) {
-            if (data._id != curr._id ) {
+            if (data && !document.getElementById(data._id) && data._id != curr._id) {
               var $newDiv = $('<div>');
               $('.users').append($newDiv);
               $newDiv.addClass("well " + data._id);
@@ -439,9 +450,17 @@ function createGroup() {
 
 function joinGroup() {
   var groupName = $(this).attr('id');
+  $(this).addClass('selected');
   document.group = groupName;
   var data = {"groupName": groupName, "userId": curr._id, "username":curr.username};
   window.socket.emit('join_group', data);
+}
+
+function leaveGroup() {
+  if (document.group) {
+    window.socket.emit('leave_group', document.group, curr.username);
+    document.group = null;
+  }
 }
 
 // iterate through all of the "swatches" of the current canvas state and store color in flattened array
@@ -476,6 +495,7 @@ function paintSwatch(data) {
 </div>
 <div class="col-sm-2 sidenav">
   <h2 class="groups"> Your Groups:</h2>
+  <button border-top="5px" id="leave" onClick="leaveGroup()"> Leave Group </button>
 </div>
 <br>
 </div>

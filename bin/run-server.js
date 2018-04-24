@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // start the server
 var app = require('../app');
+var userDb = require('../db/user');
+var groupDb = require('../db/group');
 
 app.set('port', process.env.PORT || 3000);
 
@@ -27,12 +29,16 @@ var currOnline = [];
 socketServer.on('connection', function (socket) {
 
 	// as soon as user logs on, send back all other users and the users's groups
-	socket.emit('online_users', currOnline);
+	if (currOnline) {
+		socket.emit('online_users', currOnline);
+	}
 
   // update all users a new user has logged in
   socket.on('log_on', function (data) {
+  	if (currOnline) {
+  		socket.broadcast.emit('newuser_log_on', data);
+  	}
   	currOnline.push(data);
-  	socket.broadcast.emit('newuser_log_on', data);
   });
 
 // update all users a user has logged out
@@ -51,6 +57,20 @@ socket.on('log_out', function (data) {
 // tell all sockets to check for updates
 socket.on('create_group', function(data) {
 	console.log("group created");
+	var users = data.users;
+	groupDb.addGroup(data, function(err, savedGroup) {
+		if (err) {
+			alert("Error creating group: " + err);
+		} else {
+			for (var i = 0; i < users.length; i++) {
+				userDb.addGroup(users[i], savedGroup._id, function(err, res) {
+					if (err) {
+						console.log("error adding group to user: " + err);
+					}
+				});
+			}
+		}
+	})
 	socketServer.emit('new_group', data);
 });
 
@@ -71,7 +91,7 @@ socket.on('paint', function(data) {
 socket.on('leave_group', function (groupId, userId) {
 	//TODO- emit to only group members, emit user_left
 	socket.leave(groupId); // disconnect socket
-	socketServer.to(data.groupId).emit('user_left', userId); // emit to group that this user left
+	socketServer.to(groupId).emit('user_left', userId); // emit to group that this user left
 });
 
 });

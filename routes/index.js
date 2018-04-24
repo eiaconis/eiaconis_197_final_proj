@@ -57,7 +57,7 @@ router.post('/createAccount', function (req, res) {
 	var email = req.body.email;
 	var username = req.body.username;
 	var password = req.body.password;
-	userDb.addUser({username: username, password: password, email: email}, function (err, savedUser) {
+	userDb.addUser({username: username, password: password, email: email, groups:[], canvases:[]}, function (err, savedUser) {
 		if (err) {
 			res.redirect('/')
 		} else {

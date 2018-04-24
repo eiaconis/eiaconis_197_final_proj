@@ -24,6 +24,15 @@ module.exports = {
     });
   },
 
+  addGroup: function(currId, id, callback) {
+    mongo.User.findOne({_id: currId}).exec(function (error, user) {
+      user.groups.push(id);
+      user.save(function(error) {
+        callback(error, user);
+      })
+    });
+  },
+
   getUserByUsername: function(username, callback) {
     mongo.User.findOne({username: username}).exec(function (error, reviews) {
       callback(error, reviews);
