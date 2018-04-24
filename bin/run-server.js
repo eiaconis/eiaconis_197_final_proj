@@ -62,6 +62,11 @@ socket.on('join_group', function(data){
 	socketServer.to(data.groupName).emit('user_join', data.username); // emit to group that this user left
 });
 
+socket.on('paint', function(data) {
+	var update = {"ind": data.ind, "color": data.color};
+	socketServer.to(data.groupName).emit('paint_canvas', update); 
+});
+
 // allow a user to leave group and update users in this group
 socket.on('leave_group', function (groupId, userId) {
 	//TODO- emit to only group members, emit user_left

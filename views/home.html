@@ -239,19 +239,6 @@ button {
            var canvasState = []
            var curr;
            $(document).ready(function () {
-            $.get('/allGroups', function (data, status) {
-              allGroups = data;
-              for (var i = 0; i < allGroups.length; i++) {
-                if (allGroups.users.contains(curr._id)) {
-                  var $newDiv = $('<div>');
-                  $('.groups').append($newDiv);
-                  $newDiv.addClass("well " + allGroups[i].name);
-                  var content = document.createTextNode(allGroups[i].name);
-                  $newDiv.append(content);
-                $newDiv.on('mousedown', joinGroup); //TODO: open current canvas of group
-              }
-            }
-          });
             console.log("loading canvas");
             var $canvasElement = $('#canvas-builder');
             var builder = new CanvasBuilder($canvasElement);
@@ -296,12 +283,16 @@ button {
                 window.makeGroup(data);
               });
 
-              window.socket.on('user_left', function (data) {
-                //TODO
+              window.socket.on('user_left', function (username) {
+                alert(username + " left group!");
               });
 
               window.socket.on('user_join', function (username) {
-                 alert(username + " joined!");
+               alert(username + " joined group!");
+             });
+
+              window.socket.on('paint_canvas', function(data) {
+                window.paintSwatch(data);
               });
 
             });
@@ -388,6 +379,12 @@ function onMouseOver (e) {
     $(this).removeClass($(this).get(0).classList[1]);
     $(this).addClass(selectedSwatch);
     $(this).data('past', selectedSwatch);
+    var ind = $(this).attr('id');
+    canvasState[ind] = selectedSwatch;
+    if (document.group) {
+      var data = {"groupName":document.group, "ind": ind, "color": selectedSwatch};
+      window.socket.emit('paint', data);
+    }
   } else {
     $(this).removeClass($(this).get(0).classList[1]);
     $(this).addClass(selectedSwatch);
@@ -405,6 +402,10 @@ function onMouseDown () {
   var ind = $(this).attr('id');
   canvasState[ind] = selectedSwatch;
   $(this).addClass(selectedSwatch);
+  if (document.group) {
+    var data = {"groupName":document.group, "ind": ind, "color": selectedSwatch};
+    window.socket.emit('paint', data);
+  }
 }
 
 function onClickedUser() {
@@ -437,8 +438,8 @@ function createGroup() {
 }
 
 function joinGroup() {
-  //TODO: when user clicks name of group, add to room
   var groupName = $(this).attr('id');
+  document.group = groupName;
   var data = {"groupName": groupName, "userId": curr._id, "username":curr.username};
   window.socket.emit('join_group', data);
 }
@@ -447,11 +448,20 @@ function joinGroup() {
 function saveCanvas() {
   var title = $('.title').val();
   var newCanvas = {"title": title, "author": curr._id, "type":true, content:canvasState}; //TODO update type based if in group
-  console.log(newCanvas);
   document.canvas = newCanvas;
+  console.log(document.canvas);
   $.post('/saveCanvas', function (req, res) {
     alert('Saved canvas!');
   });
+}
+
+function paintSwatch(data) {
+  console.log("painting" + data.color);
+  canvasState[data.ind] = data.color;
+  var currSwatch = document.getElementById(data.ind);
+  var remove = currSwatch.classList[1];
+  currSwatch.classList.remove(remove);
+  currSwatch.classList.add("swatch", data.color);
 }
 
 </script>
