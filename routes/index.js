@@ -5,10 +5,6 @@ var bodyParser = require('body-parser');
 var userDb = require('../db/user');
 var groupDb = require('../db/group');
 var canvasDb = require('../db/canvas');
-//var Canvas = require('../db/Canvas');
-
-
-var checkValidKey = require('../middlewares/checkValidKey');
 
 /*Get Requests*/
 router.get('/home', function (req, res, next) {

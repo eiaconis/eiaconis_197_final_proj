@@ -19,6 +19,7 @@ app.set('view engine', 'html');
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', function (req, res) {
+	// Clean DB
 	/*userDb.removeAll(function(err) {
 		groupDb.removeAll(function(err) {
 			canvasDb.removeAll(function(err) {
