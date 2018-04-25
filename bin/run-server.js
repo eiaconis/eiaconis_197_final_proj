@@ -90,7 +90,7 @@ socket.on('paint', function(data) {
 
 // allow a user to leave group and update users in this group
 socket.on('leave_group', function (groupId, userId) {
-	//TODO- emit to only group members, emit user_left
+	console.log("leaving group" + userId)
 	socket.leave(groupId); // disconnect socket
 	socketServer.to(groupId).emit('user_left', userId); // emit to group that this user left
 });

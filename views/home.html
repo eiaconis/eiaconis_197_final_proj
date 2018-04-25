@@ -462,8 +462,10 @@ function joinGroup() {
 
 function leaveGroup() {
   if (document.group) {
+    console.log("leaving")
     window.socket.emit('leave_group', document.group, curr.username);
     document.group = null;
+    clearCanvas();
   }
 }
 
@@ -485,6 +487,18 @@ function paintSwatch(data) {
   var remove = currSwatch.classList[1];
   currSwatch.classList.remove(remove);
   currSwatch.classList.add("swatch", data.color);
+}
+
+function clearCanvas() {
+  for (var i = 0; i < 3948; i++) {
+    if (canvasState[i]) {
+      var currSwatch = document.getElementById(i);
+      var remove = currSwatch.classList[1];
+      currSwatch.classList.remove(remove);
+      currSwatch.classList.add("white");
+      canvasState[i] = "white";
+    }
+  }
 }
 
 </script>
