@@ -19,10 +19,6 @@ router.get('/home', function (req, res, next) {
   }
 });
 
-router.get('/projects', function (req, res, next) {
-  res.render('projects');
-});
-
 router.get('/currUser', function (req, res, next) {
   userDb.getUserById(req.session.user, function (err, user) {
     console.log('got curr User' + user);

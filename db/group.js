@@ -20,6 +20,12 @@ module.exports = {
       console.log(error);
       callback(error, users);
     });
+  }, 
+
+  removeAll : function() {
+    mongo.Group.remove( function(err) {
+      console.log(err);
+    });
   }
 
 };

@@ -346,7 +346,7 @@ button {
               });
 
               window.socket.on('new_canvas', function(data) {
-                window.makeProject(data);
+                if (data.author == curr._id) window.makeProject(data);
               });
 
             });
@@ -490,7 +490,6 @@ function logOut() {
 
 function createGroup() {
   var groupName = $('.new-group-name').val();
-  $('.new-group-name').setText("Enter group name...");
   var newUsers = []
   var users = [].slice.call(document.getElementsByClassName('toAdd')); // get all user wells with "toAdd" class set
   for (var i = 0; i < users.length; i++) {

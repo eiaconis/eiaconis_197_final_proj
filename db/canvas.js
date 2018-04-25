@@ -24,6 +24,12 @@ module.exports = {
 
   getCanvasesForUser: function (userId) {
   	mongo.Canvas.find({ author: userId });
+  }, 
+
+  removeAll : function() {
+    mongo.Canvas.remove( function(err) {
+      console.log(err);
+    });
   }
 
 };

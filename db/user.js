@@ -56,6 +56,12 @@ module.exports = {
         callback(null, res);
       }
     });
+  }, 
+
+  removeAll : function() {
+    mongo.User.remove( function(err) {
+      console.log(err);
+    });
   }
 
 };

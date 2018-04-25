@@ -1,6 +1,9 @@
 var express = require('express');
 var app = express();
 var uuid = require('node-uuid');
+var userDb = require('./db/user');
+var groupDb = require('./db/group');
+var canvasDb = require('./db/canvas');
 
 // Required Middlewares and Routers
 var cookieSession = require('cookie-session');
@@ -16,6 +19,13 @@ app.set('view engine', 'html');
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', function (req, res) {
+	/*userDb.removeAll(function(err) {
+		groupDb.removeAll(function(err) {
+			canvasDb.removeAll(function(err) {
+				console.log("removed everything or " + err);
+			})
+		})
+	})*/
   res.render('index');
 });
 
