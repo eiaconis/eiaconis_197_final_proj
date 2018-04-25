@@ -17,7 +17,6 @@ var userSchema = new mongoose.Schema({
   username: {type: String, required: true},
   email: String,
   password: {type: String, required: true},
-  groups: [Schema.ObjectId], // id of a group schema, which stores all users in a group
   canvases: [Schema.ObjectId] // store all of a user's individual painting canvases
 });
 

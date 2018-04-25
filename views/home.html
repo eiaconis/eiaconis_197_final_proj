@@ -196,7 +196,6 @@ button {
       <div class="collapse navbar-collapse" id="myNavbar">
         <ul class="nav navbar-nav">
           <li class="active"><a href="#">Home</a></li>
-          <li><a href="#">My Projects</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <button class="btn btn-primary btn-block btn-large" onClick="logOut()">Log Out</button> 
@@ -213,6 +212,9 @@ button {
         <br>
         <textarea id="new-group=name" class="new-group-name"> Enter group name... </textarea>
         <button onClick="createGroup()" border-top="5px"> Create Group </button>
+        <br>
+        <h2 class="groups"> Your Groups:</h2>
+        <button border-top="5px" id="leave" onClick="leaveGroup()"> Leave Group </button>
       </div>
       <div class="col-sm-8 text-left"> 
         <div id="canvas-builder">
@@ -238,7 +240,6 @@ button {
           <textarea class="title" id="title"> Enter title!</textarea>
           <script>
            // var allUsers = []
-           var allGroups = []
            var canvasState = []
            var curr;
            $(document).ready(function () {
@@ -254,8 +255,26 @@ button {
 
             $.get('/currUser', function (data, status) {
                   curr = data; // store reference to current user frontend
-
                 });
+
+            $.get('/allGroups', function (data, status) {
+              var allGroups= data;
+              console.log(allGroups);
+              for (var i = 0; i < allGroups.length; i++) {
+                window.makeGroup(data[i]);
+              }
+            });
+
+            $.get('/allProjects', function (data, status) {
+              var allProjects = data;
+              console.log(allProjects);
+              for (var i = 0; i < allProjects.length; i++) {
+                if (allProjects[i].author == curr._id) {
+                  window.makeProject(allProjects[i]);
+                }
+              }
+            });
+
               // notify server a new user has connected and ask it to notify other online users
               window.socket.on('connect', function () {
                 $.get('/currUser', function (data, status) {
@@ -276,7 +295,6 @@ button {
               });
 
               window.socket.on('online_users', function (allUsers) {
-                console.log(allUsers)
                 for (var i = 0; i < allUsers.length; i++) {
                   if (allUsers[i] && !document.getElementById(allUsers[i]._id) && allUsers[i]._id != curr._id) {
                     var $newDiv = $('<div>');
@@ -292,6 +310,8 @@ button {
 
               window.socket.on('new_group', function (data) {
                 window.makeGroup(data);
+                if (data.users.includes(curr._id)) {
+                }
               });
 
               window.socket.on('user_left', function (username) {
@@ -308,6 +328,25 @@ button {
 
               window.socket.on('paint_canvas', function(data) {
                 window.paintSwatch(data);
+              });
+
+              window.socket.on('draw_canvas', function(data) {
+                console.log("drawing!" + data.content);
+                var canvasState = data.content;
+                for (var i = 0; i < 3948; i++) {
+                  if (canvasState[i]) {
+                    console.log(canvasState[i])
+                    var currSwatch = document.getElementById(i);
+                    var remove = currSwatch.classList[1];
+                    currSwatch.classList.remove(remove);
+                    console.log(canvasState[i]);
+                    currSwatch.classList.add(canvasState[i]);
+                  }
+                }
+              });
+
+              window.socket.on('new_canvas', function(data) {
+                window.makeProject(data);
               });
 
             });
@@ -330,16 +369,26 @@ button {
           }
 
           window.makeGroup = function(data) {
-            if (data.users.includes(curr._id)) {
+            if (data && data.users.includes(curr._id)) {
               var $newDiv = $('<div>');
               $('.groups').append($newDiv);
               $newDiv.addClass("well " + data.name);
               $newDiv.attr('id', data.name);
               var content = document.createTextNode(data.name);
               $newDiv.append(content);
-            $newDiv.on('mousedown', joinGroup); //TODO: open current canvas of group
+              $newDiv.on('mousedown', joinGroup); 
+            }
           }
-        }
+
+          window.makeProject = function(data) {
+            var $newDiv = $('<div>');
+            $('.projects').append($newDiv);
+            $newDiv.addClass("well " + data.title);
+            $newDiv.attr('id', data.title);
+            var content = document.createTextNode(data.title);
+            $newDiv.append(content);
+            $newDiv.on('mousedown', emitRedraw); 
+          }
  /*
  Modified HW4
  */
@@ -441,6 +490,7 @@ function logOut() {
 
 function createGroup() {
   var groupName = $('.new-group-name').val();
+  $('.new-group-name').setText("Enter group name...");
   var newUsers = []
   var users = [].slice.call(document.getElementsByClassName('toAdd')); // get all user wells with "toAdd" class set
   for (var i = 0; i < users.length; i++) {
@@ -472,12 +522,10 @@ function leaveGroup() {
 // iterate through all of the "swatches" of the current canvas state and store color in flattened array
 function saveCanvas() {
   var title = $('.title').val();
-  var newCanvas = {"title": title, "author": curr._id, "type":true, content:canvasState}; //TODO update type based if in group
+  var type = document.group ? true : false;
+  var newCanvas = {"title": title, "author": curr._id, "type": type, content:canvasState}; //TODO update type based if in group
   document.canvas = newCanvas;
-  console.log(document.canvas);
-  $.post('/saveCanvas', function (req, res) {
-    alert('Saved canvas!');
-  });
+  window.socket.emit('save_canvas', newCanvas, curr._id);
 }
 
 function paintSwatch(data) {
@@ -501,6 +549,15 @@ function clearCanvas() {
   }
 }
 
+function emitRedraw() {
+  var title = $(this).attr('id');
+  if (title) {
+    console.log('emitting redraw for ' + title);
+  window.socket.emit('get_canvas_data', title);
+  }
+}
+
+
 </script>
 <div class="canvas">
   <!-- map cells populated by JS -->
@@ -512,8 +569,7 @@ function clearCanvas() {
 <hr>
 </div>
 <div class="col-sm-2 sidenav">
-  <h2 class="groups"> Your Groups:</h2>
-  <button border-top="5px" id="leave" onClick="leaveGroup()"> Leave Group </button>
+  <h2 class="projects"> Your Projects:</h2>
 </div>
 <br>
 </div>

@@ -1,6 +1,5 @@
 
 var isAuthenticated = function (req, res, next) {
-  console.log("checking for auth");
   if (req.session.isAuthenticated) {
     res.redirect('/home');
     next();

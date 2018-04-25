@@ -13,6 +13,13 @@ module.exports = {
       console.log(saved);
       callback(error, saved);
     });
+  }, 
+
+  getAllGroups: function (callback) {
+    mongo.Group.find(function (error, users) {
+      console.log(error);
+      callback(error, users);
+    });
   }
 
 };

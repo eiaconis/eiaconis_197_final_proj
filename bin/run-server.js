@@ -3,6 +3,7 @@
 var app = require('../app');
 var userDb = require('../db/user');
 var groupDb = require('../db/group');
+var canvasDb = require('../db/canvas');
 
 app.set('port', process.env.PORT || 3000);
 
@@ -63,21 +64,13 @@ socket.on('create_group', function(data) {
 		if (err) {
 			alert("Error creating group: " + err);
 		} else {
-			for (var i = 0; i < users.length; i++) {
-				userDb.addGroup(users[i], savedGroup._id, function(err, res) {
-					if (err) {
-						console.log("error adding group to user: " + err);
-					}
-				});
-			}
+			socketServer.emit('new_group', data);
 		}
-	})
-	socketServer.emit('new_group', data);
+	});	
 });
 
 // socket joins group
 socket.on('join_group', function(data){
-	//TODO - emit to only group members, emit user_join
 	console.log(data.username + "joined" + data.groupName);
 	socket.join(data.groupName);
 	socketServer.to(data.groupName).emit('user_join', data.username); // emit to group that this user left
@@ -94,5 +87,29 @@ socket.on('leave_group', function (groupId, userId) {
 	socket.leave(groupId); // disconnect socket
 	socketServer.to(groupId).emit('user_left', userId); // emit to group that this user left
 });
+
+socket.on('save_canvas', function (canvas, id) {
+	console.log(canvas);
+	canvasDb.saveCanvas(canvas, function(err, data) {
+		if (err) {
+			console.log("Error creating group: " + err);
+		} else {
+			console.log("saved canvas!" + data);
+			socketServer.local.emit('new_canvas', data);
+		}
+	});	
+})
+
+socket.on('get_canvas_data', function (title) {
+	console.log("getting " + title);
+	canvasDb.getCanvasData(title, function(err, data) {
+		if (err) {
+			console.log("Error getting canvas: " + err);
+		} else {
+			socketServer.local.emit('draw_canvas', data);
+		}
+	});	
+})
+
 
 });
