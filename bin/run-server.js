@@ -35,10 +35,11 @@ socketServer.on('connection', function (socket) {
 
   // update all users a new user has logged in
   socket.on('log_on', function (data) {
-  	if (currOnline) {
-  		socket.broadcast.emit('newuser_log_on', data);
+  	if (data) {
+  		currOnline.push(data);
   	}
-  	currOnline.push(data);
+  	socket.broadcast.emit('newuser_log_on', data);
+
   });
 
 // update all users a user has logged out

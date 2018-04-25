@@ -258,7 +258,10 @@ button {
                 });
               // notify server a new user has connected and ask it to notify other online users
               window.socket.on('connect', function () {
-                window.socket.emit('log_on', curr);
+                $.get('/currUser', function (data, status) {
+                  curr = data; // store reference to current user frontend
+                  window.socket.emit('log_on', curr);
+                });
               });
 
               // update state if user logs on
@@ -273,18 +276,19 @@ button {
               });
 
               window.socket.on('online_users', function (allUsers) {
+                console.log(allUsers)
                 for (var i = 0; i < allUsers.length; i++) {
                   if (allUsers[i] && !document.getElementById(allUsers[i]._id) && allUsers[i]._id != curr._id) {
-                  var $newDiv = $('<div>');
-                  $('.users').append($newDiv);
-                  $newDiv.addClass("well " + allUsers[i]._id);
-                  $newDiv.attr('id', allUsers[i]._id);
-                  var content = document.createTextNode(allUsers[i].username);
-                  $newDiv.append(content);
-                  $newDiv.on('mousedown', onClickedUser);
+                    var $newDiv = $('<div>');
+                    $('.users').append($newDiv);
+                    $newDiv.addClass("well " + allUsers[i]._id);
+                    $newDiv.attr('id', allUsers[i]._id);
+                    var content = document.createTextNode(allUsers[i].username);
+                    $newDiv.append(content);
+                    $newDiv.on('mousedown', onClickedUser);
+                  }
                 }
-              }
-            });
+              });
 
               window.socket.on('new_group', function (data) {
                 window.makeGroup(data);
