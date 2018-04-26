@@ -1,6 +1,7 @@
 var express = require('express');
 var app = express();
 var uuid = require('node-uuid');
+const mongoose = require('mongoose');
 var userDb = require('./db/user');
 var groupDb = require('./db/group');
 var canvasDb = require('./db/canvas');
