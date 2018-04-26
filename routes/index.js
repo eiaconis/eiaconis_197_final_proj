@@ -38,7 +38,6 @@ router.get('/allUsers', function (req, res, next) {
 router.get('/allGroups', function (req, res, next) {
   groupDb.getAllGroups(function (err, allGroups) {
     console.log(err);
-    console.log('got all Groups' + allGroups);
     res.send(allGroups);
   });
 });
@@ -46,16 +45,14 @@ router.get('/allGroups', function (req, res, next) {
 router.get('/allProjects', function (req, res, next) {
   canvasDb.getAllCanvases(function (err, allCanvases) {
     console.log(err);
-    console.log('got all Canvases' + allCanvases);
     res.send(allCanvases);
   });
 });
 
 router.get('/canvasData', function (req, res, next) {
-  console.log("title" + req.title);
+  console.log('title' + req.title);
   canvasDb.getCanvasData(req.title, function (err, canvas) {
     console.log(err);
-    console.log('got Canvas' + canvas);
     res.send(canvas);
   });
 });
