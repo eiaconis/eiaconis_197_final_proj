@@ -4,7 +4,7 @@
   "description": "Final Project",
   "main": "app.js",
   "scripts": {
-    "start": "node ./bin/run-server",
+    "start": "node app.js ./bin/run-server",
     "test": "grunt"
   },
   "author": "",
