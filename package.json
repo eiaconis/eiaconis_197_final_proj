@@ -1,10 +1,11 @@
 {
-  "name": "Final Project",
+  "name": "finalproject",
   "version": "1.0.0",
   "description": "Final Project",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js ./bin/run-server",
+    "start": "node app.js",
+    "start": "./bin/run-server",
     "test": "grunt"
   },
   "author": "",
