@@ -9,13 +9,9 @@ var canvasDb = require('../db/canvas');
 
 app.set('port', process.env.PORT || 3000);
 
-/*var server = app.listen(app.get('port'), function () {
-  console.log('Express server listening on port %d', server.address().port);
-});*/
 
 // The below code creates a simple HTTP server with the NodeJS `http` module,
-// and makes it able to handle websockets. However, currently it does not
-// actually have any websocket functionality - that part is your job!
+// and makes it able to handle websockets. 
 
 var http = require('http');
 var io = require('socket.io');
