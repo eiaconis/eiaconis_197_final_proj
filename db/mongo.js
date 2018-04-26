@@ -9,7 +9,7 @@ var mongoose = require('mongoose');
     console.log('DB successfully connected. Adding seed data...');
   }
 });*/
-
+const config = require('./config');
 mongoose.connect(process.env.MONGODB_URI || config.database);
 
 var db = mongoose.connection;
