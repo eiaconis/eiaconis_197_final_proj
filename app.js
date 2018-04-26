@@ -1,6 +1,5 @@
 var express = require('express');
 var app = express();
-const mongoose = require('mongoose');
 var uuid = require('node-uuid');
 var userDb = require('./db/user');
 var groupDb = require('./db/group');
@@ -13,6 +12,8 @@ var router = require('./routes/index');
 var handleError = require('./middlewares/handleError');
 var pageNotFound = require('./middlewares/pageNotFound');
 var isAuthenticated = require('./middlewares/isAuthenticated');
+
+mongoose.connect(process.env.MONGODB_URI || config.database);
 
 // Serve static pages
 app.engine('html', require('ejs').__express);
