@@ -339,7 +339,7 @@ button {
                     var remove = currSwatch.classList[1];
                     currSwatch.classList.remove(remove);
                     console.log(canvasState[i]);
-                    currSwatch.data('past', canvasState[i]);
+                    $('#' + i).data('past', canvasState[i]);
                     currSwatch.classList.add(canvasState[i]);
                   }
                 }
@@ -445,8 +445,8 @@ function onMouseOver (e) {
     $(this).removeClass($(this).get(0).classList[1]);
     $(this).addClass(selectedSwatch);
     $(this).data('past', selectedSwatch);
-    var ind = $(this).attr('id');
     canvasState[ind] = selectedSwatch;
+    var ind = $(this).attr('id');
     if (document.group) {
       var data = {'groupName':document.group, 'ind': ind, 'color': selectedSwatch};
       window.socket.emit('paint', data);
@@ -537,7 +537,7 @@ function paintSwatch(data) {
   var remove = currSwatch.classList[1];
   currSwatch.classList.remove(remove);
   currSwatch.classList.add('swatch', data.color);
-  currSwatch.data('past', data.color);
+  $('#' + data.ind).data('past', data.color);
 }
 
 function clearCanvas() {
@@ -547,7 +547,7 @@ function clearCanvas() {
       var remove = currSwatch.classList[1];
       currSwatch.classList.remove(remove);
       currSwatch.classList.add('white');
-      currSwatch.data('past', 'white');
+      $('#' + i).data('past', 'white');
       canvasState[i] = 'white';
     }
   }
