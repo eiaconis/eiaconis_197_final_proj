@@ -176,7 +176,7 @@ button {
   background-color:#FF0000;
 }
 
-.selected {
+.inGroup {
   border-color: #0074D9;
 }
 
@@ -332,7 +332,7 @@ button {
 
               window.socket.on('draw_canvas', function(data) {
                 console.log("drawing!" + data.content);
-                var canvasState = data.content;
+                canvasState = data.content;
                 for (var i = 0; i < 3948; i++) {
                   if (canvasState[i]) {
                     console.log(canvasState[i])
@@ -347,6 +347,11 @@ button {
 
               window.socket.on('new_canvas', function(data) {
                 if (data.author == curr._id) window.makeProject(data);
+              });
+
+              window.socket.on('req_canvas', function() {
+                console.log(canvasState + " " + document.group);
+                 window.socket.emit('curr_canvas', canvasState, document.group);
               });
 
             });
@@ -496,14 +501,15 @@ function createGroup() {
     newUsers.push(users[i].id);
   }
   newUsers.push(curr._id);
-  console.log(newUsers);
   var data = {name: groupName, users: newUsers};
   window.socket.emit('create_group', data);
 }
 
 function joinGroup() {
+  if (!$(this).get(0).classList[2]) {
+    $(this).addClass('inGroup');
+  }
   var groupName = $(this).attr('id');
-  $(this).addClass('selected');
   document.group = groupName;
   var data = {"groupName": groupName, "userId": curr._id, "username":curr.username};
   window.socket.emit('join_group', data);
@@ -511,7 +517,8 @@ function joinGroup() {
 
 function leaveGroup() {
   if (document.group) {
-    console.log("leaving")
+    var currGroup = document.getElementById(document.group);
+    currGroup.classList.remove('inGroup');
     window.socket.emit('leave_group', document.group, curr.username);
     document.group = null;
     clearCanvas();

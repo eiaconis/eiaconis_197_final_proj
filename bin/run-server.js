@@ -73,8 +73,18 @@ socket.on('create_group', function(data) {
 socket.on('join_group', function(data){
 	console.log(data.username + "joined" + data.groupName);
 	socket.join(data.groupName);
-	socketServer.to(data.groupName).emit('user_join', data.username); // emit to group that this user left
+	// get current canvas state to send back also
+	socketServer.to(data.groupName).emit('req_canvas'); 
+	socketServer.to(data.groupName).emit('user_join', data.username); // emit to group user joined
 });
+
+socket.on('curr_canvas', function(canvas, groupName) {
+	console.log(groupName + canvas);
+	var data = {content: canvas}
+	if (canvas && groupName) {
+		socketServer.to(groupName).emit('draw_canvas', data);
+	}
+})
 
 socket.on('paint', function(data) {
 	var update = {"ind": data.ind, "color": data.color};
@@ -83,13 +93,12 @@ socket.on('paint', function(data) {
 
 // allow a user to leave group and update users in this group
 socket.on('leave_group', function (groupId, userId) {
-	console.log("leaving group" + userId)
+	console.log("leaving group " + userId)
 	socket.leave(groupId); // disconnect socket
 	socketServer.to(groupId).emit('user_left', userId); // emit to group that this user left
 });
 
 socket.on('save_canvas', function (canvas, id) {
-	console.log(canvas);
 	canvasDb.saveCanvas(canvas, function(err, data) {
 		if (err) {
 			console.log("Error creating group: " + err);
