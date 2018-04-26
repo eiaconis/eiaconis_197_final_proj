@@ -10,6 +10,7 @@ var mongoose = require('mongoose');
   }
 });*/
 const config = require('./config');
+
 mongoose.connect(process.env.MONGODB_URI || config.database);
 
 var db = mongoose.connection;
