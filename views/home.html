@@ -339,6 +339,7 @@ button {
                     var remove = currSwatch.classList[1];
                     currSwatch.classList.remove(remove);
                     console.log(canvasState[i]);
+                    currSwatch.data('past', canvasState[i]);
                     currSwatch.classList.add(canvasState[i]);
                   }
                 }
@@ -536,6 +537,7 @@ function paintSwatch(data) {
   var remove = currSwatch.classList[1];
   currSwatch.classList.remove(remove);
   currSwatch.classList.add('swatch', data.color);
+  currSwatch.data('past', data.color);
 }
 
 function clearCanvas() {
@@ -545,7 +547,7 @@ function clearCanvas() {
       var remove = currSwatch.classList[1];
       currSwatch.classList.remove(remove);
       currSwatch.classList.add('white');
-      console.log("here")
+      currSwatch.data('past', 'white');
       canvasState[i] = 'white';
     }
   }
