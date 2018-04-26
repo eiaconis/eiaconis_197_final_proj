@@ -4,7 +4,6 @@
   "description": "Final Project",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
     "start": "node ./bin/run-server",
     "test": "grunt"
   },

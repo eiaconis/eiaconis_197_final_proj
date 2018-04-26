@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // start the server
 var app = require('../app');
+const mongoose = require('mongoose');
+mongoose.connect(process.env.MONGODB_URI || config.database);
 var userDb = require('../db/user');
 var groupDb = require('../db/group');
 var canvasDb = require('../db/canvas');

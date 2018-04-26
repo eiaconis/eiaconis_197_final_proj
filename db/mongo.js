@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/cis197finalproject', function (err) {
+/*mongoose.connect('mongodb://localhost/cis197finalproject', function (err) {
   if (err && err.message.includes('ECONNREFUSED')) {
     console.log('Error connecting to mongodb database: %s.\nIs "mongod" running?', err.message);
     process.exit(0);
@@ -8,7 +8,9 @@ mongoose.connect('mongodb://localhost/cis197finalproject', function (err) {
   } else {
     console.log('DB successfully connected. Adding seed data...');
   }
-});
+});*/
+
+mongoose.connect(process.env.MONGODB_URI || config.database);
 
 var db = mongoose.connection;
 const Schema = mongoose.Schema;
