@@ -331,7 +331,7 @@ button {
 
               window.socket.on('draw_canvas', function(data) {
                 canvasState = data.content;
-                for (var i = 0; i < 3948; i++) {
+                for (var i = 0; i < 5000; i++) {
                   if (canvasState[i]) {
                     console.log(canvasState[i])
                     var currSwatch = document.getElementById(i);
