@@ -445,8 +445,8 @@ function onMouseOver (e) {
     $(this).removeClass($(this).get(0).classList[1]);
     $(this).addClass(selectedSwatch);
     $(this).data('past', selectedSwatch);
-    canvasState[ind] = selectedSwatch;
     var ind = $(this).attr('id');
+    canvasState[ind] = selectedSwatch;
     if (document.group) {
       var data = {'groupName':document.group, 'ind': ind, 'color': selectedSwatch};
       window.socket.emit('paint', data);
