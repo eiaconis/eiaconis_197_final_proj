@@ -69,9 +69,9 @@ socket.on('create_group', function(data) {
 // socket joins group
 socket.on('join_group', function(data){
 	console.log(data.username + "joined" + data.groupName);
-	socket.join(data.groupName);
 	// get current canvas state to send back also
 	socketServer.to(data.groupName).emit('req_canvas'); 
+	socket.join(data.groupName);
 	socketServer.to(data.groupName).emit('user_join', data.username); // emit to group user joined
 });
 
