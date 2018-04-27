@@ -330,7 +330,6 @@ button {
               });
 
               window.socket.on('draw_canvas', function(data) {
-                if (data.author == curr._id) {
                 canvasState = data.content;
                 for (var i = 0; i < 5000; i++) {
                   if (canvasState[i]) {
@@ -343,7 +342,6 @@ button {
                     currSwatch.classList.add(canvasState[i]);
                   }
                 }
-              }
               });
 
               window.socket.on('new_canvas', function(data) {
