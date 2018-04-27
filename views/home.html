@@ -525,7 +525,7 @@ function leaveGroup() {
 function saveCanvas() {
   var title = $('.title').val();
   var type = document.group ? true : false;
-  var newCanvas = {'title': title, 'author': curr._id, 'type': type, content:canvasState}; //TODO update type based if in group
+  var newCanvas = {'title': title, 'author': curr._id, 'type': type, 'content': canvasState};
   document.canvas = newCanvas;
   window.socket.emit('save_canvas', newCanvas, curr._id);
 }
